@@ -160,6 +160,23 @@
 
   #define CONTEXT_FAULTING_ADDRESS ((char *) info->si_addr)
 
+/****************** MIPS, all OS */
+
+#elif defined(TARGET_mips)
+
+  #define DECLARE_SIGNAL_HANDLER(name) \
+    static void name(int sig, int code, struct sigcontext * context)
+
+  #define SET_SIGACT(sigact,name) \
+     sigact.sa_handler = (void (*)(int)) (name); \
+     sigact.sa_flags = 0
+
+  typedef int context_reg;
+  #define CONTEXT_PC (context->sc_pc)
+  #define CONTEXT_EXCEPTION_POINTER (context->sc_regs[30])
+  #define CONTEXT_YOUNG_LIMIT (context->sc_regs[22])
+  #define CONTEXT_YOUNG_PTR (context->sc_regs[23])
+
 /****************** PowerPC, MacOS X */
 
 #elif defined(TARGET_power) && defined(SYS_rhapsody)

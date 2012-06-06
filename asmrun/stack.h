@@ -34,6 +34,11 @@
 #endif
 #endif
 
+#ifdef TARGET_mips
+#define Saved_return_address(sp) *((intnat *)((sp) - 4))
+#define Callback_link(sp) ((struct caml_context *)((sp) + 16))
+#endif
+
 #ifdef TARGET_power
 #define Saved_return_address(sp) *((intnat *)((sp) - SIZEOF_PTR))
 #define Already_scanned(sp, retaddr) ((retaddr) & 1)
