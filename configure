@@ -309,6 +309,9 @@ case "$bytecc,$host" in
     # (For those who want to force "cc -64")
     # Turn off warning "unused library"
     bytecclinkopts="-Wl,-woff,84";;
+  gcc*,mips64el-*)
+    bytecccompopts=""
+    bytecclinkopts="-fno-defer-pop $gcc_warnings -Wl,-O1 -Wl,--as-needed";;
   *,alpha*-*-unicos*)
     # For the Cray T3E
     bytecccompopts="-DUMK";;
@@ -491,6 +494,8 @@ if $int64_native; then
         echo "64-bit integers must be doubleword-aligned."
         echo "#define ARCH_ALIGN_INT64" >> m.h
       fi;;
+    mips64el-*)
+        echo "#define ARCH_ALIGN_INT64" >> m.h;;
     *)
       sh ./runtest int64align.c
       case $? in
@@ -685,6 +690,7 @@ case "$host" in
                                   arch=i386; system=macosx
                                 fi;;
   i[3456]86-*-gnu*)             arch=i386; system=gnu;;
+  mips*-gnu*)                   arch=mips; system=gnu;;
   powerpc*-*-linux*)            arch=power; model=ppc; system=elf;;
   powerpc-*-netbsd*)            arch=power; model=ppc; system=elf;;
   powerpc-*-rhapsody*)          arch=power; model=ppc; system=rhapsody;;
@@ -711,7 +717,7 @@ esac
 
 if $arch64; then
   case "$arch,$model" in
-    sparc,default|power,ppc)
+    sparc,default|mips,default|power,ppc)
       arch=none; model=default; system=unknown;;
   esac
 fi
@@ -727,6 +733,9 @@ nativecclinkopts=''
 nativeccrpath="$byteccrpath"
 
 case "$arch,$nativecc,$system,$host_type" in
+  mips,gcc*,gnu,mips64el-*)
+                       nativecccompopts="$gcc_warnings -fPIC"
+                       nativecclinkopts="--as-needed";;
   *,*,nextstep,*)      nativecccompopts="$gcc_warnings -U__GNUC__ -posix"
                        nativecclinkopts="-posix";;
   *,*,rhapsody,*darwin[1-5].*)
@@ -754,6 +763,8 @@ case "$arch,$model,$system" in
                     aspp='/usr/ccs/bin/as -P';;
   i386,*,*)         as='as'
                     aspp='gcc -c';;
+  mips,*,gnu)       as='as -KPIC'
+                    aspp='gcc -c -fPIC';;	# got bus error without fPIC ?
   power,*,elf)      as='as -u -m ppc'
                     aspp='gcc -c';;
   power,*,bsd)      as='as'
@@ -784,6 +795,7 @@ case "$arch,$model,$system" in
     case "$nativecc" in gcc*) ;; *) cc_profile='-xpg';; esac;;
   amd64,*,linux) profiling='prof';;
   amd64,*,gnu) profiling='prof';;
+  mips,*,gnu) profiling='prof';;
   arm,*,linux*) profiling='prof';;
   *) profiling='noprof';;
 esac
@@ -1170,6 +1182,7 @@ case "$arch" in
             then bng_asm_level=2
             else bng_asm_level=1
             fi;;
+  mips)     bng_arch=mips; bng_asm_level=1;;
   power)    bng_arch=ppc; bng_asm_level=1;;
   amd64)    bng_arch=amd64; bng_asm_level=1;;
   *)        bng_arch=generic; bng_asm_level=0;;
