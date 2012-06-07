@@ -19,6 +19,9 @@
 
         .text
 
+        .global  caml_system__code_begin
+caml_system__code_begin:
+
         .globl  caml_call_gc
         .ent    caml_call_gc
 
@@ -376,6 +379,9 @@ caml_ml_array_bound_error:
         jal     caml_c_call             /* never returns */
 
         .end    caml_ml_array_bound_error
+
+        .global caml_system__code_end
+caml_system__code_end:
 
         .rdata
         .globl  caml_system__frametable
